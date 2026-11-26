@@ -62,6 +62,32 @@ Steps:
 4. Write a tiny `agent.py` with one `Agent` (name, model, instruction). No tools yet.
 5. Run `uv run adk web src` and chat with it in the browser.
 
+### Note: how ADK finds the agent and the `.env`
+
+```
+paper-to-notebook/          <- project root
+└── src/                    <- a folder that HOLDS agents
+    └── paper_to_notebook/  <- THE agent (agent.py + __init__.py)
+```
+
+**`adk run` and `adk web` want different folders.**
+
+- `adk run` runs **one** agent, so it wants **the agent folder itself** (the one with `agent.py`).
+  - `adk run src` fails: `src` has no `agent.py`, just another folder.
+  - From the project root, use: `uv run adk run src/paper_to_notebook` (no need to `cd`).
+- `adk web` can show **many** agents in a dropdown, so it wants **the parent folder** that holds them.
+  - `adk web src` works: each subfolder of `src` (here `paper_to_notebook`) becomes one agent.
+
+Short version: **run** takes the agent folder, **web** takes the folder of agents.
+
+**Why `.env` works in more than one place.**
+
+ADK starts looking for `.env` in the agent folder (`src/paper_to_notebook/`). If none is there, it moves up one folder (`src/`, then the project root, and so on) and uses the **first** `.env` it finds.
+
+- So the agent folder, `src/` or the project root all work. The docs say "agent folder" only because it is the closest spot.
+- Keeping it in the project root is fine. Just make sure `.env` is in `.gitignore`.
+- Keep only **one** `.env`. If there are several, only the nearest one is used, which can be confusing.
+
 **You learn:** how an ADK agent is defined, and how `adk web` finds it (`root_agent`).
 
 **Done when:** the agent replies to "hi" in the ADK web UI.
